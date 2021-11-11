@@ -1,26 +1,54 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import { useState, FormEvent } from 'react'
+import { fetchUser, removeUser } from './actions/users'
+import {
+  getUserSelector,
+  isUserFetching,
+  isUserResetting,
+  hasError,
+} from './selectors/users'
+import { useAppDispatch, useAppSelector } from './hooks/redux'
 
-function App() {
+const App = () => {
+  const [userInput, setUserInput] = useState('')
+  const dispatch = useAppDispatch()
+  const currentUser = useAppSelector(getUserSelector)
+  const errorMessage = useAppSelector(hasError)
+  const isFetching = useAppSelector(isUserFetching)
+  const isResetting = useAppSelector(isUserResetting)
+
+  const handleInputChange = (event: FormEvent<HTMLInputElement>): void => {
+    setUserInput(event.currentTarget.value)
+  }
+
+  const handleFetchUser = (): void => {
+    dispatch(fetchUser(userInput))
+  }
+  const handleRemoveUser = (): void => {
+    dispatch(removeUser())
+  }
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+    <section>
+      <input type="text" onChange={handleInputChange} value={userInput}></input>
+      <button onClick={handleFetchUser}>FETCH</button>
+      <button onClick={handleRemoveUser}>REMOVE</button>
+      <>
+        {isFetching || isResetting ? (
+          <>
+            <p>Loading...</p>
+          </>
+        ) : (
+          <>
+            {currentUser && (
+              <div>{JSON.stringify(currentUser, undefined, 2)}</div>
+            )}
+          </>
+        )}
+
+        {errorMessage && <p>{errorMessage}</p>}
+      </>
+    </section>
+  )
 }
 
-export default App;
+export default App
